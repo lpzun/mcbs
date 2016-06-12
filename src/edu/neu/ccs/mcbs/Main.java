@@ -1,6 +1,6 @@
 package edu.neu.ccs.mcbs;
 
-import edu.neu.ccs.mcbs.util.Parser;
+import edu.neu.ccs.mcbs.util.TTS;
 
 public class Main {
 
@@ -33,10 +33,10 @@ public class Main {
 			// }
 			//
 			String filename = "./examples/toy-1.tts";
-			String initlTS = "0|0";
+			String initlTS = "0|0,1";
 			String finalTS = "0|0,12,12";
 
-			Parser parser = new Parser(filename, initlTS, finalTS);
+			TTS parser = new TTS(filename, initlTS, finalTS);
 			parser.parseState(finalTS, '|');
 
 			// CommandLine cmdline = new CommandLine(args);

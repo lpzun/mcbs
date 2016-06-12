@@ -5,13 +5,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Parser {
+public class TTS {
 
 	private GlobalState initlState;
 
@@ -31,13 +31,19 @@ public class Parser {
 	 * @param initlS
 	 * @param finalS
 	 */
-	public Parser(String filename, String initlS, String finalS) {
+	public TTS(String filename, String initlS, String finalS) {
 		try {
 			this.finalState = new GlobalState();
 			this.finalState = new GlobalState();
 
 			this.initlState = parseState(initlS, '|');
 			this.finalState = parseState(finalS, '|');
+
+			if (Utilities.covers(this.finalState, this.initlState)) {
+				System.out.println("Yes, ........Covers");
+			} else {
+				System.out.println("No, does not Covers");
+			}
 
 			System.out.println(this.initlState);
 			System.out.println(this.finalState);
@@ -75,7 +81,7 @@ public class Parser {
 		// handle shared part
 		Integer shareState = Integer.parseInt(noCommTS.get(0));
 		// handle local part
-		SortedMap<Integer, Short> localPart = new TreeMap<>();
+		Map<Integer, Short> localPart = new HashMap<>();
 		for (int i = 1; i < noCommTS.size(); ++i) {
 			Integer localState = Integer.parseInt(noCommTS.get(i));
 			Short count = localPart.get(localState);

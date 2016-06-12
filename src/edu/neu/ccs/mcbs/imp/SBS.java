@@ -1,5 +1,7 @@
 package edu.neu.ccs.mcbs.imp;
 
+import edu.neu.ccs.mcbs.util.TTS;
+
 /**
  * Sequential Backward Search
  * 
@@ -8,8 +10,16 @@ package edu.neu.ccs.mcbs.imp;
  */
 public class SBS {
 
-	public SBS() {
-		// TODO Auto-generated constructor stub
+	private TTS tts;
+
+	/**
+	 * Constructor for sequential Backward search
+	 * @param filename
+	 * @param initlS
+	 * @param finalS
+	 */
+	public SBS(String filename, String initlS, String finalS) {
+		tts = new TTS(filename, initlS, finalS);
 	}
 
 }
