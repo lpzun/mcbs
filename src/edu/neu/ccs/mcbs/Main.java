@@ -1,7 +1,6 @@
 package edu.neu.ccs.mcbs;
 
 import edu.neu.ccs.mcbs.imp.SBS;
-import edu.neu.ccs.mcbs.util.TTS;
 
 public class Main {
 
@@ -33,15 +32,15 @@ public class Main {
 			// break;
 			// }
 			//
-			String filename = "./examples/toy-1.tts";
+			String filename = "./examples/satabs.1.tts";
 			String initlS = "0|0";
-			String finalS = "6|3";
+			String finalS = "./examples/satabs.1.prop";
 
 			SBS sbs = new SBS(filename, initlS, finalS);
 			boolean isCoverable = sbs.sequential_BS();
 			System.out.println(
 			        "======================================================");
-			System.out.print("Target");
+			System.out.print(sbs.getTTS().getFinalState());
 			if (isCoverable)
 				System.out.println(" is coverable: verification failed!");
 			else

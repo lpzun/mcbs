@@ -39,12 +39,6 @@ public class TTS {
 			this.initlState = parseState(initlS, '|');
 			this.finalState = parseState(finalS, '|');
 
-			if (Utilities.covers(this.finalState, this.initlState)) {
-				System.out.println("Yes, ........Covers");
-			} else {
-				System.out.println("No, does not Covers");
-			}
-
 			System.out.println(this.initlState);
 			System.out.println(this.finalState);
 
@@ -69,21 +63,23 @@ public class TTS {
 	public GlobalState parseState(String sstate, char sep)
 	        throws McbsException {
 		System.out.println(sstate);
-		List<String> noCommTS = new ArrayList<>();
-		if (sstate.indexOf(sep) != -1) {
-			noCommTS = Stream.of(sstate).map(s -> s.split("(\\||\\,)"))
-			        .flatMap(Arrays::stream).collect(Collectors.toList());
-		} else {
-			noCommTS = this.removeComment(sstate, "#");
+		if (sstate.indexOf(sep) == -1) {
+			List<String> noCommTS = this.removeComment(sstate, "#");
+			if (noCommTS.size() < 1)
+				throw new McbsException("Illegal State Format!");
+			sstate = noCommTS.get(0);
+
 		}
-		if (noCommTS.size() < 2)
-			throw new McbsException("Illegal State Format!");
+		List<String> state = new ArrayList<>();
+
+		state = Stream.of(sstate).map(s -> s.split("(\\||\\,)"))
+		        .flatMap(Arrays::stream).collect(Collectors.toList());
 		// handle shared part
-		Integer shareState = Integer.parseInt(noCommTS.get(0));
+		Integer shareState = Integer.parseInt(state.get(0));
 		// handle local part
 		Map<Integer, Short> localPart = new HashMap<>();
-		for (int i = 1; i < noCommTS.size(); ++i) {
-			Integer localState = Integer.parseInt(noCommTS.get(i));
+		for (int i = 1; i < state.size(); ++i) {
+			Integer localState = Integer.parseInt(state.get(i));
 			Short count = localPart.get(localState);
 			if (count == null) {
 				localPart.put(localState, (short) 1);
@@ -124,10 +120,21 @@ public class TTS {
 		// removing the first element which stores the size of TTS
 		noCommTTS.remove(0);
 
+		List<String> forIndexTS = new ArrayList<>();
 		// get all distinguish thread state
 		noCommTTS.stream().map(line -> line.split("\\s(\\+|-|~)>\\s"))
-		        .flatMap(Arrays::stream).distinct()
-		        .forEach(s -> this.activeTS.add(new ThreadState(s)));
+		        .flatMap(Arrays::stream).distinct().sorted().forEach(s -> {
+			        String[] ts = s.split("\\s+");
+			        if (ts.length < 2)
+				        try {
+					        throw new McbsException(
+		                            "Thread state format is incorrect");
+				        } catch (Exception e) {
+					        e.printStackTrace();
+				        }
+			        forIndexTS.add(ts[0] + ts[1]);
+			        this.activeTS.add(new ThreadState(ts[0], ts[1]));
+		        });
 
 		activeLR = new ArrayList[ThreadState.S];
 		for (String stran : noCommTTS) {
@@ -136,13 +143,8 @@ public class TTS {
 				throw new McbsException("TTS's transition is incorrect!");
 			}
 
-			Integer s1 = Integer.parseInt(list[0]),
-			        l1 = Integer.parseInt(list[1]);
-			Integer s2 = Integer.parseInt(list[3]),
-			        l2 = Integer.parseInt(list[4]);
-
-			Integer src = activeTS.indexOf(new ThreadState(s1, l1));
-			Integer dst = activeTS.indexOf(new ThreadState(s2, l2));
+			Integer src = forIndexTS.indexOf(list[0] + list[1]);
+			Integer dst = forIndexTS.indexOf(list[3] + list[4]);
 
 			// define transition r, and determine its transition type
 			Transition r = new Transition();
@@ -156,6 +158,7 @@ public class TTS {
 				throw new McbsException("TTS's transition is incorrect!");
 			}
 
+			Integer s2 = Integer.parseInt(list[3]);
 			if (this.activeLR[s2] == null)
 				this.activeLR[s2] = new ArrayList<>();
 			this.activeLR[s2].add(this.activeR.size());
@@ -168,15 +171,15 @@ public class TTS {
 			this.printTransition(r);
 		}
 
-		System.out.println("Incoming edge: ");
-		for (int i = 0; i < this.activeLR.length; ++i) {
-			System.out.println("Shared State: " + i);
-			if (this.activeLR[i] != null)
-				for (Integer rid : this.activeLR[i]) {
-					System.out.print(" ");
-					printTransition(this.activeR.get(rid));
-				}
-		}
+//		System.out.println("Incoming edge: ");
+//		for (int i = 0; i < this.activeLR.length; ++i) {
+//			System.out.println("Shared State: " + i);
+//			if (this.activeLR[i] != null)
+//				for (Integer rid : this.activeLR[i]) {
+//					System.out.print(" ");
+//					printTransition(this.activeR.get(rid));
+//				}
+//		}
 
 	}
 
@@ -191,8 +194,9 @@ public class TTS {
 	 */
 	private List<String> removeComment(String filename, String comment) {
 		List<String> noCommentTTS = new ArrayList<>();
-		try (Stream<String> stream = Files.lines(Paths.get(filename))) {
-			noCommentTTS = stream.filter(line -> !line.startsWith(comment))
+		try {
+			noCommentTTS = Files.lines(Paths.get(filename))
+			        .filter(line -> !line.startsWith(comment))
 			        .collect(Collectors.toList());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -219,6 +223,7 @@ public class TTS {
 			System.out.print(" ~> ");
 			break;
 		}
+		System.out.print(" " + r.getDst());
 		System.out.println(this.activeTS.get(r.getDst()));
 	}
 

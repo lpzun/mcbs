@@ -47,18 +47,6 @@ public class ThreadState {
 	 * @param shareState
 	 * @param localState
 	 */
-	public ThreadState(String s) {
-		String[] state = s.split("\\s+");
-		this.shareState = Integer.parseInt(state[0]);
-		this.localState = Integer.parseInt(state[1]);
-	}
-
-	/**
-	 * Constructor with shared state and local state
-	 * 
-	 * @param shareState
-	 * @param localState
-	 */
 	public ThreadState(String shareState, String localState) {
 		this.shareState = Integer.parseInt(shareState);
 		this.localState = Integer.parseInt(localState);

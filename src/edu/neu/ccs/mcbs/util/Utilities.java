@@ -1,10 +1,8 @@
 package edu.neu.ccs.mcbs.util;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * This is a class with only utilities. It contains only static methods. Thus,
@@ -174,7 +172,7 @@ public class Utilities {
 	 */
 	public static List<GlobalState> minimize(GlobalState tau,
 	        List<GlobalState> W) {
-		W.removeIf(w -> !covers(w, tau));
+		W.removeIf(w -> covers(w, tau));
 		W.add(tau);
 		return W;
 	}

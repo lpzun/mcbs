@@ -52,7 +52,7 @@ public class SBS {
 
 		while (!worklist.isEmpty()) {
 			GlobalState _tau = worklist.poll();
-			System.out.println(_tau); // TODO delete--------------
+//			System.out.println(_tau); // TODO delete--------------
 
 			Integer s = _tau.getShareState();
 			// step 1: if \exists t \in expanded such that
@@ -64,7 +64,7 @@ public class SBS {
 			// them one by one
 			List<GlobalState> images = this.step(_tau);
 			for (GlobalState tau : images) {
-				System.out.println("  " + tau);// TODO delete--------------
+//				System.out.println("  " + tau);// TODO delete--------------
 				if (Utilities.coverable(initlTS, tau))
 					return true;
 				// if tau is in upward(T_init), return true
@@ -102,9 +102,6 @@ public class SBS {
 					if (_Z.containsKey(prev.getLocalState())) {
 						Map<Integer, Short> Z = Utilities
 						        .decrement(curr.getLocalState(), _Z);
-						// GlobalState tau = new
-						// GlobalState(prev.getShareState(),
-						// Z);
 						images.add(new GlobalState(prev.getShareState(), Z));
 					}
 				}
@@ -112,8 +109,6 @@ public class SBS {
 				default: {
 					Map<Integer, Short> Z = Utilities.updateCounter(
 					        prev.getLocalState(), curr.getLocalState(), _Z);
-					// GlobalState tau = new GlobalState(prev.getShareState(),
-					// Z);
 					images.add(new GlobalState(prev.getShareState(), Z));
 				}
 					break;
@@ -121,5 +116,12 @@ public class SBS {
 			}
 		}
 		return images;
+	}
+
+	/**
+	 * @return the tts
+	 */
+	public TTS getTTS() {
+		return tts;
 	}
 }
