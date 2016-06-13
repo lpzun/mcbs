@@ -1,5 +1,7 @@
 package edu.neu.ccs.mcbs.util;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,7 +19,7 @@ public class Utilities {
 	}
 
 	/**
-	 * update counter
+	 * U-pdate counter
 	 * 
 	 * @param inc
 	 * @param dec
@@ -25,11 +27,12 @@ public class Utilities {
 	 * @return local state part
 	 */
 	public static Map<Integer, Short> updateCounter(Integer inc, Integer dec,
-	        Map<Integer, Short> Z) {
+	        Map<Integer, Short> _Z) {
 		// step 0: immediately return if inc == dec
 		if (inc == dec)
-			return Z;
+			return _Z;
 
+		Map<Integer, Short> Z = new HashMap<>(_Z);
 		// step 1: update counter for the decremental
 		Short ldec = Z.get(dec);
 		if (ldec != null) {
@@ -45,6 +48,50 @@ public class Utilities {
 			Z.put(inc, (short) (linc + 1));
 		} else {
 			Z.put(inc, (short) 1);
+		}
+		return Z;
+	}
+
+	/**
+	 * Increment counter
+	 * 
+	 * @param inc
+	 * @param dec
+	 * @param Z
+	 * @param isFork
+	 * @return local state part
+	 */
+	public static Map<Integer, Short> increment(Integer inc,
+	        Map<Integer, Short> _Z) {
+		Map<Integer, Short> Z = new HashMap<>(_Z);
+		// step 2: update counter for the incremental
+		Short linc = Z.get(inc);
+		if (linc != null) {
+			Z.put(inc, (short) (linc + 1));
+		} else {
+			Z.put(inc, (short) 1);
+		}
+		return Z;
+	}
+
+	/**
+	 * Decrement counter
+	 * 
+	 * @param inc
+	 * @param dec
+	 * @param Z
+	 * @param isFork
+	 * @return local state part
+	 */
+	public static Map<Integer, Short> decrement(Integer dec,
+	        Map<Integer, Short> Z) {
+		// step 1: update counter for the decremental
+		Short ldec = Z.get(dec);
+		if (ldec != null) {
+			if (ldec == 1)
+				Z.remove(dec);
+			else
+				Z.put(dec, (short) (ldec - 1));
 		}
 		return Z;
 	}
@@ -85,7 +132,7 @@ public class Utilities {
 
 		for (Map.Entry<Integer, Short> p : Z2.entrySet()) {
 			Short count = Z1.get(p.getKey());
-			if (count == null || count > p.getValue())
+			if (count == null || count < p.getValue())
 				return false;
 		}
 		return true;
@@ -111,8 +158,8 @@ public class Utilities {
 	 * @return bool true : false:
 	 */
 	public static boolean minimal(GlobalState tau, List<GlobalState> W) {
-		for (GlobalState _tau : W) {
-			if (covers(_tau, tau))
+		for (GlobalState w : W) {
+			if (covers(tau, w))
 				return false;
 		}
 		return true;
@@ -127,8 +174,8 @@ public class Utilities {
 	 */
 	public static List<GlobalState> minimize(GlobalState tau,
 	        List<GlobalState> W) {
-		List<GlobalState> _W = W.stream().filter(_tau -> covers(tau, _tau))
-		        .collect(Collectors.toList());
-		return _W;
+		W.removeIf(w -> !covers(w, tau));
+		W.add(tau);
+		return W;
 	}
 }

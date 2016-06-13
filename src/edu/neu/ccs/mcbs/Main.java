@@ -1,5 +1,6 @@
 package edu.neu.ccs.mcbs;
 
+import edu.neu.ccs.mcbs.imp.SBS;
 import edu.neu.ccs.mcbs.util.TTS;
 
 public class Main {
@@ -33,11 +34,22 @@ public class Main {
 			// }
 			//
 			String filename = "./examples/toy-1.tts";
-			String initlTS = "0|0,1";
-			String finalTS = "0|0,12,12";
+			String initlS = "0|0";
+			String finalS = "6|3";
 
-			TTS parser = new TTS(filename, initlTS, finalTS);
-			parser.parseState(finalTS, '|');
+			SBS sbs = new SBS(filename, initlS, finalS);
+			boolean isCoverable = sbs.sequential_BS();
+			System.out.println(
+			        "======================================================");
+			System.out.print("Target");
+			if (isCoverable)
+				System.out.println(" is coverable: verification failed!");
+			else
+				System.out.println(" is uncoverable: verification sucessful!");
+			System.out.println(
+			        "======================================================");
+			// TTS parser = new TTS(filename, initlTS, finalTS);
+			// parser.parseState(finalTS, '|');
 
 			// CommandLine cmdline = new CommandLine(args);
 			//

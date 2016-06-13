@@ -74,6 +74,6 @@ public class GlobalState {
 
 	@Override
 	public String toString() {
-		return "<" + shareState + "|" + localParts + ">";
+		return "(" + shareState + "|" + localParts + ")";
 	}
 }
