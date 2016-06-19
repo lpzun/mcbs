@@ -49,7 +49,8 @@ public class SBS {
 		worklist.add(tts.getFinalState());
 
 		/// (2) define expanded list and initialize it
-		ArrayList<List<GlobalState>> expanded = new ArrayList<>(ThreadState.S);
+		ArrayList<List<Map<Integer, Short>>> expanded = new ArrayList<>(
+		        ThreadState.S);
 		for (int i = 0; i < ThreadState.S; ++i) {
 			expanded.add(i, new ArrayList<>());
 		}
@@ -60,7 +61,7 @@ public class SBS {
 			final Integer s = _tau.getShareState();
 			/// step 1: if \exists t \in expanded such that
 			/// t <= _tau, then discard _tau
-			if (!Utilities.minimal(_tau, expanded.get(s)))
+			if (!Utilities.minimal(_tau.getLocalParts(), expanded.get(s)))
 				continue;
 
 			/// step 2: compute all cover preimages and handle
@@ -75,7 +76,8 @@ public class SBS {
 			/// step 3: insert _tau into the expanded states
 			/// (1) minimize the set of expanded states
 			/// (2) append tau to the set of expanded states
-			expanded.set(s, Utilities.minimize(_tau, expanded.get(s)));
+			expanded.set(s,
+			        Utilities.minimize(_tau.getLocalParts(), expanded.get(s)));
 		}
 		return false;
 	}

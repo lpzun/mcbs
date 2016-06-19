@@ -30,7 +30,7 @@ import edu.neu.ccs.mcbs.util.Utilities;
  * @author Peizun Liu
  * @date Jun 9, 2016
  * @version 1.0
- * @see SBS, CBS
+ * @see SBS, MBS, DBS
  */
 public class CBS {
 	/// Thread Transition System
@@ -55,11 +55,11 @@ public class CBS {
 	public CBS(String filename, String initlS, String finalS) {
 		tts = new TTS(filename, initlS, finalS);
 
-		nTHREADS = ThreadState.S;
+		nTHREADS = 4;
 		System.out.println("The size of thread pool " + nTHREADS);
 
 		/// define and initialize worklist
-		worklist = new ArrayBlockingQueue<>(Integer.MAX_VALUE - 1);
+		worklist = new ArrayBlockingQueue<>(Short.MAX_VALUE);
 
 		fRUNNING = new AtomicBoolean(true);
 
@@ -96,7 +96,7 @@ public class CBS {
 				futures.add(excs.submit(() -> this.coverBWS(s)));
 			});
 
-			System.out.println("------------1-----------");
+			// System.out.println("------------1-----------");
 			/// step 3: watching all tasks, if any of them completes its task.
 			/// The program will proceed based on the execution result. If the
 			/// thread returns coverable, then it will
@@ -144,17 +144,15 @@ public class CBS {
 	 * @throws InterruptedException
 	 */
 	private boolean coverBWS(Integer threadID) throws InterruptedException {
-		// System.out.println("---------2--------------");
-		while (!worklist.isEmpty() || fRUNNING.get()) {
-			// System.out.println("-----------4--------------");
-			GlobalState _tau = worklist.take();
-			// GlobalState _tau = worklist.get(threadID).poll(100,
-			// TimeUnit.MILLISECONDS);
-			// if (_tau == null)
-			// break;
+		while (!worklist.isEmpty()) {
+			// GlobalState _tau = worklist.take();
+			GlobalState _tau = worklist.poll(100, TimeUnit.MILLISECONDS);
+			if (_tau == null)
+				break;
 
 			System.out.println("Thread " + threadID + ".....");
 			System.out.println(_tau);
+
 			/// step 1: if \exists t \in T_init such that
 			/// _tau <= t, then discard _tau
 			if (Utilities.coverable(tts.getInitlState(), _tau))
@@ -164,25 +162,19 @@ public class CBS {
 			/// step 1: if \exists t \in expanded such that
 			/// t <= _tau, then discard _tau
 			if (!Utilities.minimal(_tau, expanded.get(s))) {
-				// fRUNNING.get(threadID).compareAndSet(true, false);
-				fRUNNING.compareAndSet(true, false);
-				System.out.println("I am here..." + _tau);
+				System.out.println("nonminimal.........");
 				continue;
 			}
 
 			/// step 2: compute all cover preimages and put them
 			/// into their corresponding blocking queues
-			this.step(_tau, threadID);
-
+			this.step(_tau);
+			System.out.println("after step.........");
 			/// step 3: insert _tau into the expanded states
 			/// (1) minimize the set of expanded states
 			/// (2) append tau to the set of expanded states
 			expanded.set(s, Utilities.minimize(_tau, expanded.get(s)));
-
-			// fRUNNING.get(threadID).compareAndSet(true, false);
 		}
-		fRUNNING.compareAndSet(true, false);
-		System.out.println("Thread " + threadID + ": -------finished");
 		return false;
 	}
 
@@ -193,20 +185,14 @@ public class CBS {
 	 * @param threadID
 	 * @throws InterruptedException
 	 */
-	private void step(GlobalState _tau, Integer threadID)
-	        throws InterruptedException {
+	private void step(GlobalState _tau) throws InterruptedException {
 		ArrayList<Integer> activeLR = tts.getActiveLR()[_tau.getShareState()];
 		if (activeLR != null) {
-			// fRUNNING.get(threadID).compareAndSet(false, true); // set running
 			for (Integer r : activeLR) {
 				final Transition tran = tts.getActiveR().get(r);
 				final ThreadState prev = tts.getActiveTS().get(tran.getSrc());
 				final ThreadState curr = tts.getActiveTS().get(tran.getDst());
 				Map<Integer, Short> _Z = _tau.getLocalParts();
-
-				// fRUNNING.get(prev.getShareState()).compareAndSet(false,
-				// true);
-				fRUNNING.compareAndSet(false, true);
 
 				switch (tran.getType()) {
 				case BRCT: {
@@ -229,7 +215,6 @@ public class CBS {
 					break;
 				}
 			}
-			// fRUNNING.get(threadID).compareAndSet(true, false); // reset
 		}
 	}
 

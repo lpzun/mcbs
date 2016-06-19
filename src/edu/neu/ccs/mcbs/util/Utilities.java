@@ -137,6 +137,27 @@ public class Utilities {
 	}
 
 	/**
+	 * To determine whether global state tau1 covers global state tau2
+	 * 
+	 * @param tau1
+	 * @param tau2
+	 * @return boolean true: tau1 covers tau2; false, otherwise
+	 */
+	public static boolean covers(Map<Integer, Short> Z1,
+	        Map<Integer, Short> Z2) {
+
+		if (Z1.size() < Z2.size())
+			return false;
+
+		for (final Map.Entry<Integer, Short> p : Z2.entrySet()) {
+			final Short count = Z1.get(p.getKey());
+			if (count == null || count < p.getValue())
+				return false;
+		}
+		return true;
+	}
+
+	/**
 	 * To determine whether global state tau1 is covered by a global state tau2
 	 * 
 	 * @param tau1
@@ -164,6 +185,23 @@ public class Utilities {
 	}
 
 	/**
+	 * To determine if tau is the minimal state in W
+	 * 
+	 * @param z
+	 * @param W
+	 *            a list of global states
+	 * @return bool true : false:
+	 */
+	public static boolean minimal(Map<Integer, Short> z,
+	        List<Map<Integer, Short>> W) {
+		for (final Map<Integer, Short> w : W) {
+			if (covers(z, w))
+				return false;
+		}
+		return true;
+	}
+
+	/**
 	 * Minimize a worklist W, aka removing all _tau that covers tau
 	 * 
 	 * @param tau
@@ -174,6 +212,24 @@ public class Utilities {
 	        List<GlobalState> W) {
 		W.removeIf(w -> covers(w, tau));
 		W.add(tau);
+		return W;
+		// List<GlobalState> _W = W.stream().filter(w -> !covers(w, tau))
+		// .collect(Collectors.toList());
+		// _W.add(tau);
+		// return _W;
+	}
+
+	/**
+	 * Minimize a worklist W, aka removing all _tau that covers tau
+	 * 
+	 * @param z
+	 * @param W
+	 * @return minimized W
+	 */
+	public static List<Map<Integer, Short>> minimize(Map<Integer, Short> z,
+	        List<Map<Integer, Short>> W) {
+		W.removeIf(w -> covers(w, z));
+		W.add(z);
 		return W;
 		// List<GlobalState> _W = W.stream().filter(w -> !covers(w, tau))
 		// .collect(Collectors.toList());

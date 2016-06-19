@@ -1,5 +1,6 @@
 package edu.neu.ccs.mcbs;
 
+import edu.neu.ccs.mcbs.imp.CBS;
 import edu.neu.ccs.mcbs.imp.MBS;
 import edu.neu.ccs.mcbs.imp.SBS;
 import edu.neu.ccs.mcbs.util.CommandLine;
@@ -36,6 +37,9 @@ public class Main {
 				isCoverable = mbs.concurrentBWS();
 				System.out.print(mbs.getTTS().getFinalState());
 			} else if (mode.equals("C")) {
+				CBS cbs = new CBS(filename, initlS, finalS);
+				isCoverable = cbs.concurrentBWS();
+				System.out.print(cbs.getTTS().getFinalState());
 
 			}
 			if (isCoverable)
