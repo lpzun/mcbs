@@ -23,7 +23,7 @@ public class CommandLine {
 
 	@Option(name = "-m", aliases = {
 	        "--mode" }, usage = "an explore mode:\n \"S\" = sequential BS\n "
-	                + "\"C\" = concurrent BS\n " + "\"D\" = cloud-based BS")
+	                + "\"M\" = multithreading BS\n " + "\"D\" = cloud-based BS")
 	private String mode;
 
 	@Option(name = "-l", aliases = {

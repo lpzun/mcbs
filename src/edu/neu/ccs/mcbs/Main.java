@@ -1,6 +1,8 @@
 package edu.neu.ccs.mcbs;
 
+import edu.neu.ccs.mcbs.imp.MBS;
 import edu.neu.ccs.mcbs.imp.SBS;
+import edu.neu.ccs.mcbs.util.CommandLine;
 
 public class Main {
 
@@ -11,52 +13,42 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		try {
-			// System.out.println("MCBS");
-			//
-			// ThreadState ts = new ThreadState(1, 2);
-			// System.out.println(ts);
-			//
-			// GlobalState gs = new GlobalState(ts);
-			//
-			// System.out.println(gs);
-			//
-			// Transition t = new Transition(0, 1, Transition.Type.FORK);
-			// System.out.println(t);
-			//
-			// switch (t.getType()) {
-			// case NORM:
-			// System.out.println(t);
-			// break;
-			// default:
-			// System.out.println("Not a normal transition!");
-			// break;
-			// }
-			//
-			String filename = "./examples/satabs.1.tts";
-			String initlS = "0|0";
-			String finalS = "./examples/satabs.1.prop";
+			// starting time
+			long startTime = System.currentTimeMillis();
 
-			SBS sbs = new SBS(filename, initlS, finalS);
-			boolean isCoverable = sbs.sequential_BS();
+			CommandLine cmd = new CommandLine(args);
+			String filename = cmd.getFileTTS();
+			String initlS = "0|0";
+			String finalS = cmd.getFinalTS();
+
+			String mode = cmd.getMode();
+
+			boolean isCoverable = false;
 			System.out.println(
 			        "======================================================");
-			System.out.print(sbs.getTTS().getFinalState());
+			if (mode.equals("S")) {
+				SBS sbs = new SBS(filename, initlS, finalS);
+				isCoverable = sbs.sequentialBWS();
+				System.out.print(sbs.getTTS().getFinalState());
+			} else if (mode.equals("M")) {
+				MBS mbs = new MBS(filename, initlS, finalS);
+				// mbs.test();
+				isCoverable = mbs.concurrentBWS();
+				System.out.print(mbs.getTTS().getFinalState());
+			} else if (mode.equals("C")) {
+
+			}
 			if (isCoverable)
 				System.out.println(" is coverable: verification failed!");
 			else
 				System.out.println(" is uncoverable: verification sucessful!");
 			System.out.println(
 			        "======================================================");
-			// TTS parser = new TTS(filename, initlTS, finalTS);
-			// parser.parseState(finalTS, '|');
 
-			// CommandLine cmdline = new CommandLine(args);
-			//
-			// String filename = cmdline.getFileTTS();
-			// String initlTS = cmdline.getInitlTS();
-			// String finalTS = cmdline.getFinalTS();
-			// if (cmdline.isPrintVersion())
-			// System.out.println("version");
+			// terminate time
+			long endTime = System.currentTimeMillis();
+			long elapsedTime = endTime - startTime;
+			System.out.println("runtime: " + (double) elapsedTime / 1000);
 
 		} catch (Exception e) {
 			e.printStackTrace();

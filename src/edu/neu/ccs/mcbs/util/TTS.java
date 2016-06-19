@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 public class TTS {
 
-	private GlobalState initlState;
+	private ThreadState initlState;
 
 	private GlobalState finalState;
 
@@ -36,8 +36,8 @@ public class TTS {
 			this.finalState = new GlobalState();
 			this.finalState = new GlobalState();
 
-			this.initlState = parseState(initlS, '|');
-			this.finalState = parseState(finalS, '|');
+			this.initlState = parseThreadState(initlS, '|');
+			this.finalState = parseGlobalState(finalS, '|');
 
 			System.out.println(this.initlState);
 			System.out.println(this.finalState);
@@ -60,19 +60,44 @@ public class TTS {
 	 * @return A global state
 	 * @throws McbsException
 	 */
-	public GlobalState parseState(String sstate, char sep)
+	public ThreadState parseThreadState(String sstate, char sep)
 	        throws McbsException {
 		System.out.println(sstate);
 		if (sstate.indexOf(sep) == -1) {
 			List<String> noCommTS = this.removeComment(sstate, "#");
 			if (noCommTS.size() < 1)
-				throw new McbsException("Illegal State Format!");
+				throw new McbsException("Illegal thread state format!");
 			sstate = noCommTS.get(0);
 
 		}
-		List<String> state = new ArrayList<>();
 
-		state = Stream.of(sstate).map(s -> s.split("(\\||\\,)"))
+		String[] state = sstate.split("\\|");
+		if (state.length != 2)
+			throw new McbsException("Illegal thread state format!");
+
+		return new ThreadState(Integer.parseInt(state[0]),
+		        Integer.parseInt(state[1]));
+	}
+
+	/**
+	 * Generate the global state
+	 * 
+	 * @param sstate
+	 * @param sep
+	 * @return A global state
+	 * @throws McbsException
+	 */
+	public GlobalState parseGlobalState(String sstate, char sep)
+	        throws McbsException {
+		System.out.println(sstate);
+		if (sstate.indexOf(sep) == -1) {
+			List<String> noCommTS = this.removeComment(sstate, "#");
+			if (noCommTS.size() < 1)
+				throw new McbsException("Illegal global state format!");
+			sstate = noCommTS.get(0);
+
+		}
+		List<String> state = Stream.of(sstate).map(s -> s.split("(\\||\\,)"))
 		        .flatMap(Arrays::stream).collect(Collectors.toList());
 		// handle shared part
 		Integer shareState = Integer.parseInt(state.get(0));
@@ -165,21 +190,21 @@ public class TTS {
 			this.activeR.add(r);
 		}
 
-		System.out.println(ThreadState.S + " " + ThreadState.L);
-		System.out.println("After: ");
-		for (Transition r : this.activeR) {
-			this.printTransition(r);
-		}
+		// System.out.println(ThreadState.S + " " + ThreadState.L);
+		// System.out.println("After: ");
+		// for (Transition r : this.activeR) {
+		// this.printTransition(r);
+		// }
 
-//		System.out.println("Incoming edge: ");
-//		for (int i = 0; i < this.activeLR.length; ++i) {
-//			System.out.println("Shared State: " + i);
-//			if (this.activeLR[i] != null)
-//				for (Integer rid : this.activeLR[i]) {
-//					System.out.print(" ");
-//					printTransition(this.activeR.get(rid));
-//				}
-//		}
+		// System.out.println("Incoming edge: ");
+		// for (int i = 0; i < this.activeLR.length; ++i) {
+		// System.out.println("Shared State: " + i);
+		// if (this.activeLR[i] != null)
+		// for (Integer rid : this.activeLR[i]) {
+		// System.out.print(" ");
+		// printTransition(this.activeR.get(rid));
+		// }
+		// }
 
 	}
 
@@ -210,6 +235,7 @@ public class TTS {
 	 * @param r:
 	 *            transition
 	 */
+	@SuppressWarnings("unused")
 	private void printTransition(Transition r) {
 		System.out.print(this.activeTS.get(r.getSrc()));
 		switch (r.getType()) {
@@ -236,7 +262,7 @@ public class TTS {
 	 * 
 	 * @return the initlState
 	 */
-	public GlobalState getInitlState() {
+	public ThreadState getInitlState() {
 		return initlState;
 	}
 

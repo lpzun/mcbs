@@ -122,14 +122,14 @@ public class Utilities {
 		if (tau1.getShareState() != tau2.getShareState())
 			return false;
 
-		Map<Integer, Short> Z1 = tau1.getLocalParts();
-		Map<Integer, Short> Z2 = tau2.getLocalParts();
+		final Map<Integer, Short> Z1 = tau1.getLocalParts();
+		final Map<Integer, Short> Z2 = tau2.getLocalParts();
 
 		if (Z1.size() < Z2.size())
 			return false;
 
-		for (Map.Entry<Integer, Short> p : Z2.entrySet()) {
-			Short count = Z1.get(p.getKey());
+		for (final Map.Entry<Integer, Short> p : Z2.entrySet()) {
+			final Short count = Z1.get(p.getKey());
 			if (count == null || count < p.getValue())
 				return false;
 		}
@@ -156,7 +156,7 @@ public class Utilities {
 	 * @return bool true : false:
 	 */
 	public static boolean minimal(GlobalState tau, List<GlobalState> W) {
-		for (GlobalState w : W) {
+		for (final GlobalState w : W) {
 			if (covers(tau, w))
 				return false;
 		}
@@ -175,5 +175,9 @@ public class Utilities {
 		W.removeIf(w -> covers(w, tau));
 		W.add(tau);
 		return W;
+		// List<GlobalState> _W = W.stream().filter(w -> !covers(w, tau))
+		// .collect(Collectors.toList());
+		// _W.add(tau);
+		// return _W;
 	}
 }

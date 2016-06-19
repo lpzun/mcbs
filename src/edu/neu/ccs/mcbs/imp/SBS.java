@@ -13,10 +13,14 @@ import edu.neu.ccs.mcbs.util.Utilities;
 import edu.neu.ccs.mcbs.util.GlobalState;
 
 /**
- * Sequential Backward Search
+ * Sequential Backward Search.
  * 
- * @author Peizun
+ * This file defines the single threading backward search.
+ * 
+ * @author Peizun Liu
  * @date Jun 9, 2016
+ * @version 1.0
+ * @see MBS, CBS
  */
 public class SBS {
 
@@ -38,41 +42,39 @@ public class SBS {
 	 * 
 	 * @return boolean true : if final state is coverable false: otherwise
 	 */
-	public boolean sequential_BS() {
-		ThreadState initlTS = new ThreadState(0, 0);
-		/// define worklist
+	public boolean sequentialBWS() {
+		/// Step 0: do some preliminaries
+		/// (1) define the worklist: a queue
 		Queue<GlobalState> worklist = new LinkedList<>();
 		worklist.add(tts.getFinalState());
 
-		/// define expanded list and initialize it
+		/// (2) define expanded list and initialize it
 		ArrayList<List<GlobalState>> expanded = new ArrayList<>(ThreadState.S);
 		for (int i = 0; i < ThreadState.S; ++i) {
-			expanded.add(i, new LinkedList<>());
+			expanded.add(i, new ArrayList<>());
 		}
 
 		while (!worklist.isEmpty()) {
-			GlobalState _tau = worklist.poll();
-//			System.out.println(_tau); // TODO delete--------------
+			final GlobalState _tau = worklist.poll();
 
-			Integer s = _tau.getShareState();
-			// step 1: if \exists t \in expanded such that
-			// t <= _tau, then discard _tau
+			final Integer s = _tau.getShareState();
+			/// step 1: if \exists t \in expanded such that
+			/// t <= _tau, then discard _tau
 			if (!Utilities.minimal(_tau, expanded.get(s)))
 				continue;
 
-			// step 2: compute all cover preimages and handle
-			// them one by one
+			/// step 2: compute all cover preimages and handle
+			/// them one by one
 			List<GlobalState> images = this.step(_tau);
-			for (GlobalState tau : images) {
-//				System.out.println("  " + tau);// TODO delete--------------
-				if (Utilities.coverable(initlTS, tau))
+			for (final GlobalState tau : images) {
+				if (Utilities.coverable(tts.getInitlState(), tau))
 					return true;
-				// if tau is in upward(T_init), return true
+				/// if tau is in upward(T_init), return true
 				worklist.add(tau);
 			}
-			// step 3: insert _tau into the expanded states
-			// (1) minimize the set of expanded states
-			// (2) append tau to the set of expanded states
+			/// step 3: insert _tau into the expanded states
+			/// (1) minimize the set of expanded states
+			/// (2) append tau to the set of expanded states
 			expanded.set(s, Utilities.minimize(_tau, expanded.get(s)));
 		}
 		return false;
@@ -89,9 +91,9 @@ public class SBS {
 		ArrayList<Integer> activeLR = tts.getActiveLR()[_tau.getShareState()];
 		if (activeLR != null) {
 			for (Integer r : activeLR) {
-				Transition tran = tts.getActiveR().get(r);
-				ThreadState prev = tts.getActiveTS().get(tran.getSrc());
-				ThreadState curr = tts.getActiveTS().get(tran.getDst());
+				final Transition tran = tts.getActiveR().get(r);
+				final ThreadState prev = tts.getActiveTS().get(tran.getSrc());
+				final ThreadState curr = tts.getActiveTS().get(tran.getDst());
 				Map<Integer, Short> _Z = _tau.getLocalParts();
 				switch (tran.getType()) {
 				case BRCT: {
