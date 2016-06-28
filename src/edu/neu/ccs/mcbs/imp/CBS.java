@@ -3,7 +3,6 @@ package edu.neu.ccs.mcbs.imp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -12,8 +11,8 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
 import edu.neu.ccs.mcbs.util.GlobalState;
@@ -40,8 +39,7 @@ public class CBS {
 	private BlockingQueue<GlobalState> worklist;
 	/// define expanded: a list of lists
 	private ArrayList<List<GlobalState>> expanded;
-
-	private AtomicBoolean fRUNNING;
+	
 	private boolean COVERABLE = false;
 	private Integer nTHREADS;
 
@@ -55,13 +53,11 @@ public class CBS {
 	public CBS(String filename, String initlS, String finalS) {
 		tts = new TTS(filename, initlS, finalS);
 
-		nTHREADS = 4;
+		nTHREADS = Runtime.getRuntime().availableProcessors();
 		System.out.println("The size of thread pool " + nTHREADS);
 
 		/// define and initialize worklist
-		worklist = new ArrayBlockingQueue<>(Short.MAX_VALUE);
-
-		fRUNNING = new AtomicBoolean(true);
+		worklist = new LinkedBlockingQueue<>();
 
 		/// define and initialize expanded
 		expanded = new ArrayList<>(ThreadState.S);
@@ -150,8 +146,8 @@ public class CBS {
 			if (_tau == null)
 				break;
 
-			System.out.println("Thread " + threadID + ".....");
-			System.out.println(_tau);
+			// System.out.println("Thread " + threadID + ".....");
+			// System.out.println(_tau);
 
 			/// step 1: if \exists t \in T_init such that
 			/// _tau <= t, then discard _tau
@@ -162,14 +158,14 @@ public class CBS {
 			/// step 1: if \exists t \in expanded such that
 			/// t <= _tau, then discard _tau
 			if (!Utilities.minimal(_tau, expanded.get(s))) {
-				System.out.println("nonminimal.........");
+				// System.out.println("nonminimal.........");
 				continue;
 			}
 
 			/// step 2: compute all cover preimages and put them
 			/// into their corresponding blocking queues
 			this.step(_tau);
-			System.out.println("after step.........");
+			// System.out.println("after step.........");
 			/// step 3: insert _tau into the expanded states
 			/// (1) minimize the set of expanded states
 			/// (2) append tau to the set of expanded states

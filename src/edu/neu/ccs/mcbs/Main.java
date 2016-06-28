@@ -4,6 +4,7 @@ import edu.neu.ccs.mcbs.imp.CBS;
 import edu.neu.ccs.mcbs.imp.MBS;
 import edu.neu.ccs.mcbs.imp.SBS;
 import edu.neu.ccs.mcbs.util.CommandLine;
+import edu.neu.ccs.mcbs.util.McbsException;
 
 public class Main {
 
@@ -23,6 +24,8 @@ public class Main {
 			String finalS = cmd.getFinalTS();
 
 			String mode = cmd.getMode();
+			if (mode == null || mode.equals(""))
+				throw new McbsException("Please assigne mode");
 
 			boolean isCoverable = false;
 			System.out.println(

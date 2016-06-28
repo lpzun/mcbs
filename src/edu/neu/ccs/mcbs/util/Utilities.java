@@ -3,6 +3,7 @@ package edu.neu.ccs.mcbs.util;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * This is a class with only utilities. It contains only static methods. Thus,
@@ -213,10 +214,21 @@ public class Utilities {
 		W.removeIf(w -> covers(w, tau));
 		W.add(tau);
 		return W;
-		// List<GlobalState> _W = W.stream().filter(w -> !covers(w, tau))
-		// .collect(Collectors.toList());
-		// _W.add(tau);
-		// return _W;
+	}
+
+	/**
+	 * Minimize a worklist W, aka removing all _tau that covers tau
+	 * 
+	 * @param tau
+	 * @param W
+	 * @return minimized W
+	 */
+	public static List<GlobalState> cminimize(GlobalState tau,
+	        List<GlobalState> W) {
+		List<GlobalState> _W = W.parallelStream().filter(w -> !covers(w, tau))
+		        .collect(Collectors.toList());
+		_W.add(tau);
+		return _W;
 	}
 
 	/**
@@ -231,9 +243,20 @@ public class Utilities {
 		W.removeIf(w -> covers(w, z));
 		W.add(z);
 		return W;
-		// List<GlobalState> _W = W.stream().filter(w -> !covers(w, tau))
-		// .collect(Collectors.toList());
-		// _W.add(tau);
-		// return _W;
+	}
+
+	/**
+	 * Minimize a worklist W, aka removing all _tau that covers tau
+	 * 
+	 * @param z
+	 * @param W
+	 * @return minimized W
+	 */
+	public static List<Map<Integer, Short>> cminimize(Map<Integer, Short> z,
+	        List<Map<Integer, Short>> W) {
+		List<Map<Integer, Short>> _W = W.parallelStream()
+		        .filter(w -> !covers(w, z)).collect(Collectors.toList());
+		_W.add(z);
+		return _W;
 	}
 }
