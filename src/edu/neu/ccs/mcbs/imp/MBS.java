@@ -42,9 +42,9 @@ public class MBS {
 	/// define expanded: a list of lists
 	private ArrayList<List<GlobalState>> expanded;
 
-	private AtomicBoolean fRUNNING;
+	// private AtomicBoolean fRUNNING;
 	private AtomicBoolean fTERMINATE;
-	// private ArrayList<AtomicBoolean> fRUNNING;
+	private ArrayList<AtomicBoolean> fRUNNING;
 
 	private boolean COVERABLE = false;
 
@@ -69,12 +69,12 @@ public class MBS {
 			worklist.add(i, new LinkedBlockingQueue<>());
 		}
 
-		fRUNNING = new AtomicBoolean(true);
+		// fRUNNING = new AtomicBoolean(true);
 		fTERMINATE = new AtomicBoolean(false);
-		// fRUNNING = new ArrayList<>(nTHREADS);
-		// for (int i = 0; i < nTHREADS; ++i) {
-		// fRUNNING.add(new AtomicBoolean(true));
-		// }
+		fRUNNING = new ArrayList<>(nTHREADS);
+		for (int i = 0; i < nTHREADS; ++i) {
+			fRUNNING.add(new AtomicBoolean(false));
+		}
 
 		/// define and initialize expanded
 		expanded = new ArrayList<>(ThreadState.S);
@@ -112,6 +112,8 @@ public class MBS {
 			futures.add(excs.submit(() -> this.initCoverBWS(0)));
 			// System.out.println(futures.size() + "===================");
 
+			this.monitor();
+
 			System.out.println("---------1--------------");
 			/// step 3: watching all tasks, if any of them completes its task.
 			/// The program will proceed based on the execution result. If the
@@ -119,14 +121,14 @@ public class MBS {
 			/// (1) set coverable flag as true, and
 			/// (2) cancel all other tasks.
 			for (int s = 0; s < futures.size(); ++s) {
-				Future<Boolean> future = excs.take();
+				Future<Boolean> future = futures.get(s);
 				if (future.get()) {
 					this.setCOVERABLE(true);
 					break;
 				}
 			}
+
 		} catch (InterruptedException e) {
-			// e.printStackTrace();
 			System.out.println("Cancel all other tasks");
 		} catch (ExecutionException e) {
 			e.printStackTrace();
@@ -148,7 +150,7 @@ public class MBS {
 				pool.shutdownNow();
 			System.out.println("Shutdown finished");
 		}
-		if (isCOVERABLE() || fTERMINATE.get())
+		if (isCOVERABLE())
 			return true;
 		return false;
 	}
@@ -167,19 +169,12 @@ public class MBS {
 			if (_tau == null)
 				continue;
 
-//			System.out.println("Thread " + threadID + ".....");
-//			System.out.println(_tau);
-			/// step 1: if \exists t \in T_init such that
-			/// _tau <= t, then discard _tau
-			if (Utilities.coverable(tts.getInitlState(), _tau)) {
-				fTERMINATE.compareAndSet(false, true);
-				return true;
-			}
-
+			fRUNNING.get(threadID).compareAndSet(false, true);
 			Integer s = _tau.getShareState();
 			/// step 1: if \exists t \in expanded such that
 			/// t <= _tau, then discard _tau
 			if (!Utilities.minimal(_tau, expanded.get(s))) {
+				fRUNNING.get(threadID).compareAndSet(true, false);
 				continue;
 			}
 
@@ -191,6 +186,7 @@ public class MBS {
 			/// (1) minimize the set of expanded states
 			/// (2) append tau to the set of expanded states
 			expanded.set(s, Utilities.minimize(_tau, expanded.get(s)));
+			fRUNNING.get(threadID).compareAndSet(true, false);
 		}
 		System.out.println(threadID + " shutdown....");
 		return false;
@@ -204,17 +200,15 @@ public class MBS {
 	 * @throws InterruptedException
 	 */
 	private boolean initCoverBWS(Integer threadID) throws InterruptedException {
-		while (!fTERMINATE.get()
-		        && (!worklist.get(threadID).isEmpty() || fRUNNING.get())) {
+		while (!fTERMINATE.get()) {
 			GlobalState _tau = worklist.get(threadID).poll(100,
 			        TimeUnit.MILLISECONDS);
 			if (_tau == null)
 				continue;
 
-			fRUNNING.compareAndSet(true, false);
-
-//			System.out.println("Thread " + threadID + ".....");
-//			System.out.println(_tau);
+			fRUNNING.get(threadID).compareAndSet(false, true);
+			System.out.println("Thread " + threadID + ".....");
+			System.out.println(_tau);
 			/// step 1: if \exists t \in T_init such that
 			/// _tau <= t, then discard _tau
 			if (Utilities.coverable(tts.getInitlState(), _tau)) {
@@ -226,6 +220,7 @@ public class MBS {
 			/// step 1: if \exists t \in expanded such that
 			/// t <= _tau, then discard _tau
 			if (!Utilities.minimal(_tau, expanded.get(s))) {
+				fRUNNING.get(threadID).compareAndSet(true, false);
 				continue;
 			}
 
@@ -237,6 +232,7 @@ public class MBS {
 			/// (1) minimize the set of expanded states
 			/// (2) append tau to the set of expanded states
 			expanded.set(s, Utilities.minimize(_tau, expanded.get(s)));
+			fRUNNING.get(threadID).compareAndSet(true, false);
 		}
 		System.out.println(threadID + " shutdown....");
 		return false;
@@ -269,9 +265,6 @@ public class MBS {
 						        .decrement(curr.getLocalState(), _Z);
 						worklist.get(prev.getShareState())
 						        .put(new GlobalState(prev.getShareState(), Z));
-						if (prev.getShareState() == tts.getInitlState()
-						        .getShareState())
-							fRUNNING.compareAndSet(false, true);
 					}
 				}
 					break;
@@ -280,12 +273,26 @@ public class MBS {
 					        prev.getLocalState(), curr.getLocalState(), _Z);
 					worklist.get(prev.getShareState())
 					        .put(new GlobalState(prev.getShareState(), Z));
-					if (prev.getShareState() == tts.getInitlState()
-					        .getShareState())
-						fRUNNING.compareAndSet(false, true);
 				}
 					break;
 				}
+			}
+		}
+	}
+
+	private void monitor() throws InterruptedException {
+		while (true) {
+			boolean running = false;
+			for (int i = 0; i < fRUNNING.size(); ++i) {
+				if (fRUNNING.get(i).get()) {
+					running = true;
+					break;
+				}
+			}
+			if (running) {
+				TimeUnit.MILLISECONDS.sleep(100);
+			} else {
+				fTERMINATE.compareAndSet(false, true);
 			}
 		}
 	}
