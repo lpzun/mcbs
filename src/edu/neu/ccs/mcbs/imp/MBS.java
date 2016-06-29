@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletionService;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
@@ -35,7 +34,7 @@ import edu.neu.ccs.mcbs.util.Utilities;
  */
 public class MBS {
 	/// Thread Transition System
-	private TTS tts;
+	private final TTS tts;
 
 	/// define worklist: a list of BlockingQueue
 	private ArrayList<BlockingQueue<GlobalState>> worklist;
@@ -317,13 +316,5 @@ public class MBS {
 	 */
 	public TTS getTTS() {
 		return tts;
-	}
-
-	/**
-	 * @param tts
-	 *            the tts to set
-	 */
-	public void setTTS(TTS tts) {
-		this.tts = tts;
 	}
 }

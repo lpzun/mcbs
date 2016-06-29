@@ -1,6 +1,5 @@
 package edu.neu.ccs.mcbs.util;
 
-import java.util.Set;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +18,7 @@ public class Utilities {
     }
 
     /**
-     * U-pdate counter
+     * Update counters
      *
      * @param inc
      * @param dec
@@ -58,40 +57,40 @@ public class Utilities {
      * Increment counter
      *
      * @param inc
-     * @param Z
+     * @param _Z
      * @return local state part
      */
     public static Map<Integer, Short> increment(Integer inc,
-            Map<Integer, Short> Z) {
+            Map<Integer, Short> _Z) {
         // step 2: update counter for the incremental
-        Short linc = Z.get(inc);
+        Short linc = _Z.get(inc);
         if (linc != null) {
-            Z.put(inc, (short) (linc + 1));
+            _Z.put(inc, (short) (linc + 1));
         } else {
-            Z.put(inc, (short) 1);
+            _Z.put(inc, (short) 1);
         }
-        return Z;
+        return _Z;
     }
 
     /**
      * Decrement counter
      *
      * @param dec
-     * @param Z
+     * @param _Z
      * @return local state part
      */
     public static Map<Integer, Short> decrement(Integer dec,
-            Map<Integer, Short> Z) {
+            Map<Integer, Short> _Z) {
         // step 1: update counter for the decremental
-        Short ldec = Z.get(dec);
+        Short ldec = _Z.get(dec);
         if (ldec != null) {
             if (ldec == 1) {
-                Z.remove(dec);
+                _Z.remove(dec);
             } else {
-                Z.put(dec, (short) (ldec - 1));
+                _Z.put(dec, (short) (ldec - 1));
             }
         }
-        return Z;
+        return _Z;
     }
 
     /**
@@ -140,8 +139,8 @@ public class Utilities {
     /**
      * To determine whether global state tau1 covers global state tau2
      *
-     * @param tau1
-     * @param tau2
+     * @param Z1
+     * @param Z2
      * @return boolean true: tau1 covers tau2; false, otherwise
      */
     public static boolean covers(Map<Integer, Short> Z1,
@@ -175,7 +174,7 @@ public class Utilities {
      *
      * @param tau
      * @param W a list of global states
-     * @return bool true : false:
+     * @return a boolean true : false:
      */
     public static boolean minimal(GlobalState tau, List<GlobalState> W) {
         for (final GlobalState w : W) {
@@ -191,7 +190,7 @@ public class Utilities {
      *
      * @param z
      * @param W a list of global states
-     * @return bool true : false:
+     * @return boolean true : false:
      */
     public static boolean minimal(Map<Integer, Short> z,
             List<Map<Integer, Short>> W) {

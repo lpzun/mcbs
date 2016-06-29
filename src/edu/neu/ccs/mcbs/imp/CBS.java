@@ -33,7 +33,7 @@ import edu.neu.ccs.mcbs.util.Utilities;
  */
 public class CBS {
 	/// Thread Transition System
-	private TTS tts;
+	private final TTS tts;
 
 	/// define worklist: a list of BlockingQueue
 	private BlockingQueue<GlobalState> worklist;
@@ -230,17 +230,9 @@ public class CBS {
 	}
 
 	/**
-	 * @return the tts
+	 * @return the TTS
 	 */
 	public TTS getTTS() {
 		return tts;
-	}
-
-	/**
-	 * @param tts
-	 *            the tts to set
-	 */
-	public void setTTS(TTS tts) {
-		this.tts = tts;
 	}
 }
